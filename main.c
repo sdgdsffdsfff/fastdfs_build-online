@@ -605,6 +605,9 @@ trackerId int primary key,
 trackerIp varchar(256) not null,
 trackerState varchar(32) not null
 );
+insert into tracker values(1,'129.0.0.1','ACTIVE');
+insert into tracker values(2,'129.0.0.1','ACTIVE');
+insert into tracker values(3,'129.0.0.1','ACTIVE');
 */
 
 static int save_mysql(MYSQL *db,char *query_str)
@@ -845,7 +848,7 @@ static void ping_tracker(TrackerServerGroup *pTrackerGroup)
 		if ((conn=tracker_connect_server(pServer, &result)) != NULL)
 		{    
 			memset(query_string, 0, SQL_BUF_LEN);
-			snprintf(query_string, SQL_BUF_LEN, "INSERT INTO tracker VALUES(%d,'%s','ACTIVE')" ,(int)(pEnd - pServer),pServer->ip_addr);
+			snprintf(query_string, SQL_BUF_LEN, "update tracker set trackerState='ACTIVE',trackerIp='%s' where trackerId=%d;" ,pServer->ip_addr,(int)(pEnd - pServer));
 			logDebug("%s\n",query_string);
 			if(save_mysql(db,query_string) != 0){
 				goto ERROR;
@@ -853,7 +856,7 @@ static void ping_tracker(TrackerServerGroup *pTrackerGroup)
 			continue ;
 		}    
 		memset(query_string, 0, SQL_BUF_LEN);
-		snprintf(query_string, SQL_BUF_LEN, "INSERT INTO tracker VALUES(%d,'%s','OFFLINE')" ,(int)(pEnd - pServer),pServer->ip_addr);
+		snprintf(query_string, SQL_BUF_LEN, "update tracker set trackerState='OFFLINE',trackerIp='%s' where trackerId=%d;" ,pServer->ip_addr,(int)(pEnd - pServer));
 		logDebug("%s\n",query_string);
 		if(save_mysql(db,query_string) != 0){
 			goto ERROR;
