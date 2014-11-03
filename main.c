@@ -787,6 +787,7 @@ static int save_db(char* key,char* value)
 			if(find_str != NULL && (find_str - line_start) < 5){
 			//	printf("%d\t%s\t%.*s\t%.*s\t%ld\n\n",index,g_fdfs_table[index].key,20,temp_str,50,line_start,strchr(line_start,'\n')-strchr(line_start,'='));
 				//fflush(stdout);
+				memset(g_fdfs_table[index].value,0,sizeof(g_fdfs_table[index].value));
 				strncpy(g_fdfs_table[index].value,strchr(line_start,'=') + 2,strchr(line_start,'\n')-strchr(line_start,'=') - 2);
 			//printf("%s\n",g_fdfs_table[index].value);
 			}
