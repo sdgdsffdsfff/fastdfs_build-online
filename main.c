@@ -600,6 +600,11 @@ success_sync_out_bytes bigint,
 last_heart_beat_time varchar(32),
 last_synced_timestamp varchar(32)
 );
+create table tracker(
+trackerId int primary key,
+trackerIp varchar(256) not null,
+trackerState varchar(32) not null
+);
 */
 
 static int save_mysql(MYSQL *db,char *query_str)
@@ -815,6 +820,54 @@ ERROR:
 }
 #endif
 
+static void ping_tracker(TrackerServerGroup *pTrackerGroup)
+{
+	int result;
+	ConnectionInfo *conn;
+	ConnectionInfo *pServer;
+	ConnectionInfo *pEnd;
+
+	MYSQL *db = NULL,mysql;
+
+	mysql_init(&mysql);
+	db = mysql_real_connect(&mysql, DB_SERVER, DB_USER, DB_PWD, DB_NAME,0,0,0);
+
+	if(db == NULL){
+		logError(mysql_error(&mysql));
+		goto ERROR;
+	}
+
+	char query_string[SQL_BUF_LEN];
+	
+	pEnd = pTrackerGroup->servers + pTrackerGroup->server_count;
+	for (pServer=pTrackerGroup->servers; pServer<pEnd; pServer++)
+	{    
+		if ((conn=tracker_connect_server(pServer, &result)) != NULL)
+		{    
+			memset(query_string, 0, SQL_BUF_LEN);
+			snprintf(query_string, SQL_BUF_LEN, "INSERT INTO tracker VALUES(%d,'%s','ACTIVE')" ,(int)(pEnd - pServer),pServer->ip_addr);
+			logDebug("%s\n",query_string);
+			if(save_mysql(db,query_string) != 0){
+				goto ERROR;
+			}
+			continue ;
+		}    
+		memset(query_string, 0, SQL_BUF_LEN);
+		snprintf(query_string, SQL_BUF_LEN, "INSERT INTO tracker VALUES(%d,'%s','OFFLINE')" ,(int)(pEnd - pServer),pServer->ip_addr);
+		logDebug("%s\n",query_string);
+		if(save_mysql(db,query_string) != 0){
+			goto ERROR;
+		}
+	}    
+
+	tracker_close_all_connections();
+	return ;
+ERROR:
+	if(db != NULL)
+		mysql_close(db);
+	return ;
+}
+
 static void* save(time_t job_time,void *arg) {
 	char output_str[4096*100];
 	char key[20];
@@ -836,6 +889,8 @@ static void* save(time_t job_time,void *arg) {
 				(g_tracker_group.server_count * (double)rand()) \
 				/ (double)RAND_MAX);
 	}
+	
+	ping_tracker(&g_tracker_group);
 
 	sprintf(output_str,"%sserver_count=%d, server_index=%d\n", output_str, g_tracker_group.server_count, g_tracker_group.server_index);
 
