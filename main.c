@@ -865,6 +865,7 @@ static void ping_tracker(TrackerServerGroup *pTrackerGroup)
 	}    
 
 	tracker_close_all_connections();
+	mysql_close(db);
 	return ;
 ERROR:
 	if(db != NULL)
