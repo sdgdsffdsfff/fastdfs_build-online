@@ -850,7 +850,7 @@ static void ping_tracker(TrackerServerGroup *pTrackerGroup)
 		{    
 			memset(query_string, 0, SQL_BUF_LEN);
 			snprintf(query_string, SQL_BUF_LEN, "update tracker set trackerState='ACTIVE',trackerIp='%s' where trackerId=%d;" ,pServer->ip_addr,(int)(pEnd - pServer));
-			logDebug("%s\n",query_string);
+			logInfo("%s\n",query_string);
 			if(save_mysql(db,query_string) != 0){
 				goto ERROR;
 			}
@@ -858,7 +858,7 @@ static void ping_tracker(TrackerServerGroup *pTrackerGroup)
 		}    
 		memset(query_string, 0, SQL_BUF_LEN);
 		snprintf(query_string, SQL_BUF_LEN, "update tracker set trackerState='OFFLINE',trackerIp='%s' where trackerId=%d;" ,pServer->ip_addr,(int)(pEnd - pServer));
-		logDebug("%s\n",query_string);
+		logInfo("%s\n",query_string);
 		if(save_mysql(db,query_string) != 0){
 			goto ERROR;
 		}
