@@ -730,6 +730,7 @@ static int save_db(char* key,char* value)
 	int storage_id = 1,prev_storage = 1;
 	int index;
 	char *find_str;
+	int no_group = 1;
 	
 	for(index = 0;index != sizeof(g_fdfs_table)/sizeof(struct fdfs_item);++index){
 		strcpy(g_fdfs_table[index].value,"0");
@@ -742,6 +743,7 @@ static int save_db(char* key,char* value)
 		line_end = strchr(line_start, '\n');
 
 		if(strncmp(line_start, "Group ",strlen("Group")) == 0){
+			no_group = 0;
 			group_id = strtol(line_start + 6,NULL,10);
 		}
 		if(strncmp(line_start, "\tStorage ",strlen("\tStorage ")) == 0){
@@ -794,26 +796,29 @@ static int save_db(char* key,char* value)
 		}
 		line_start = line_end + 1;
 	}
-	snprintf(query_string, SQL_BUF_LEN, "insert into storage(time,groupid,serverid,");
-	for(index = 0;index != 45;++index){
-		strcpy(temp_str,query_string);
-		snprintf(query_string,SQL_BUF_LEN,"%s%s,",temp_str,g_fdfs_table[index].insert_key);
-	}
-	strcpy(temp_str,query_string);
-	snprintf(query_string,SQL_BUF_LEN,"%s%s)values('%s',%d,%d," ,temp_str,g_fdfs_table[index].insert_key,key,group_id,storage_id);
-	for(index = 0;index != 45;++index){
-		strcpy(temp_str,query_string);
-		if(index != 0 && index != 1 && index != 2 && index != 3 && index != 8 && index != 44){
-			snprintf(query_string,SQL_BUF_LEN,"%s%ld,",temp_str,strtol(g_fdfs_table[index].value,0,10));
-			continue ;
+	if(no_group == 0)
+	{
+		snprintf(query_string, SQL_BUF_LEN, "insert into storage(time,groupid,serverid,");
+		for(index = 0;index != 45;++index){
+			strcpy(temp_str,query_string);
+			snprintf(query_string,SQL_BUF_LEN,"%s%s,",temp_str,g_fdfs_table[index].insert_key);
 		}
-		snprintf(query_string,SQL_BUF_LEN,"%s'%s',",temp_str,g_fdfs_table[index].value);
+		strcpy(temp_str,query_string);
+		snprintf(query_string,SQL_BUF_LEN,"%s%s)values('%s',%d,%d," ,temp_str,g_fdfs_table[index].insert_key,key,group_id,storage_id);
+		for(index = 0;index != 45;++index){
+			strcpy(temp_str,query_string);
+			if(index != 0 && index != 1 && index != 2 && index != 3 && index != 8 && index != 44){
+				snprintf(query_string,SQL_BUF_LEN,"%s%ld,",temp_str,strtol(g_fdfs_table[index].value,0,10));
+				continue ;
+			}
+			snprintf(query_string,SQL_BUF_LEN,"%s'%s',",temp_str,g_fdfs_table[index].value);
+		}
+		strcpy(temp_str,query_string);
+		snprintf(query_string,SQL_BUF_LEN,"%s'%s')" ,temp_str,g_fdfs_table[index].value);
+		//snprintf(query_string, 4096 * 100, "INSERT INTO storage(time,groupId,serverId,ip,total,free)VALUES('%s',%d,%d,'%s',%d,%d)" ,key , group_id, storage_id, ip, total, free);
+		logInfo("%s",query_string);
+		save_mysql(db,query_string);
 	}
-	strcpy(temp_str,query_string);
-	snprintf(query_string,SQL_BUF_LEN,"%s'%s')" ,temp_str,g_fdfs_table[index].value);
-	//snprintf(query_string, 4096 * 100, "INSERT INTO storage(time,groupId,serverId,ip,total,free)VALUES('%s',%d,%d,'%s',%d,%d)" ,key , group_id, storage_id, ip, total, free);
-	logInfo("%s",query_string);
-	save_mysql(db,query_string);
 
 	mysql_close(db);
 	return 0;
