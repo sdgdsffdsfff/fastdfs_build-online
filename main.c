@@ -38,7 +38,8 @@ struct configItem g_config_list[] = {
 	{"db_name", ""},
 	{"db_user", ""},
 	{"db_pwd", ""},
-	{"log_name", ""}
+	{"log_name", ""},
+	{"fdfs_tag", ""}
 };
 
 int g_log_fd;
@@ -48,6 +49,7 @@ int g_log_fd;
 #define DB_USER			g_config_list[2].value
 #define DB_PWD			g_config_list[3].value
 #define LOG_NAME		g_config_list[4].value
+#define FDFS_TAG		atoi(g_config_list[5].value)
 
 static ConnectionInfo *pTrackerServer;
 
@@ -547,8 +549,8 @@ datatime VARCHAR(32) not null,
 value VARCHAR(409600) not null,
 PRIMARY KEY(id)
 )DEFAULT charset=utf8;
-drop table storage;
-create table storage(
+drop table t_fdfsweb_storage;
+create table t_fdfsweb_storage(
 id bigint AUTO_INCREMENT primary key,
 time varchar(32) not null,
 groupId int not null,
@@ -600,14 +602,14 @@ success_sync_out_bytes bigint,
 last_heart_beat_time varchar(32),
 last_synced_timestamp varchar(32)
 );
-create table tracker(
+create table t_fdfsweb_tracker(
 trackerId int primary key,
 trackerIp varchar(256) not null,
 trackerState varchar(32) not null
 );
-insert into tracker values(1,'129.0.0.1','ACTIVE');
-insert into tracker values(2,'129.0.0.1','ACTIVE');
-insert into tracker values(3,'129.0.0.1','ACTIVE');
+insert into t_fdfsweb_tracker values(1,'129.0.0.1','ACTIVE');
+insert into t_fdfsweb_tracker values(2,'129.0.0.1','ACTIVE');
+insert into t_fdfsweb_tracker values(3,'129.0.0.1','ACTIVE');
 */
 
 static int save_mysql(MYSQL *db,char *query_str)
@@ -652,52 +654,52 @@ struct fdfs_item
 };
 
 struct fdfs_item g_fdfs_table[] = {
-	{"ip_addr", "ip_addr", ""},
-	{"version", "version", ""},
-	{"join time", "join_time", ""},
-	{"up time", "up_time", ""},
-	{"total storage", "total_storage", ""},
-	{"free storage", "free_storage", ""},
-	{"upload priority", "upload_priority", ""},
-	{"store_path_count", "store_path_count ", ""},
-	{"storage_port", "storage_port", ""},
-	{"connection.alloc_count", "connection_alloc_count", ""},
-	{"connection.current_count", "connection_current_count", ""},
-	{"connection.max_count", "connection_max_count", ""},
-	{"total_upload_count", "total_upload_count", ""},
-	{"success_upload_count", "success_upload_count", ""},
-	{"total_append_count", "total_append_count", ""},
-	{"success_append_count", "success_append_count", ""},
-	{"total_modify_count", "total_modify_count", ""},
-	{"success_modify_count", "success_modify_count", ""},
-	{"total_truncate_count", "total_truncate_count", ""},
-	{"success_truncate_count", "success_truncate_count", ""},
-	{"total_set_meta_count", "total_set_meta_count", ""},
-	{"success_set_meta_count", "success_set_meta_count", ""},
-	{"total_delete_count", "total_delete_count", ""},
-	{"success_delete_count", "success_delete_count", ""},
-	{"total_download_count", "total_download_count", ""},
-	{"success_download_count", "success_download_count", ""},
-	{"total_get_meta_count", "total_get_meta_count", ""},
-	{"success_get_meta_count", "success_get_meta_count", ""},
-	{"total_create_link_count", "total_create_link_count", ""},
-	{"success_create_link_count", "success_create_link_count", ""},
-	{"total_delete_link_count", "total_delete_link_count", ""},
-	{"success_delete_link_count", "success_delete_link_count", ""},
-	{"total_upload_bytes", "total_upload_bytes", ""},
-	{"success_upload_bytes", "success_upload_bytes", ""},
-	{"total_append_bytes", "total_append_bytes", ""},
-	{"success_append_bytes", "success_append_bytes", ""},
-	{"total_modify_bytes", "total_modify_bytes", ""},
-	{"success_modify_bytes", "success_modify_bytes", ""},
-	{"total_download_bytes", "total_download_bytes", ""},
-	{"success_download_bytes", "success_download_bytes", ""},
-	{"total_sync_in_bytes", "total_sync_in_bytes", ""},
-	{"success_sync_in_bytes", "success_sync_in_bytes",  ""},
-	{"total_sync_out_bytes", "total_sync_out_bytes", ""},
-	{"success_sync_out_bytes", "success_sync_out_bytes", ""},
-	{"last_heart_beat_time", "last_heart_beat_time", ""},
-	{"last_synced_timestamp", "last_synced_timestamp", ""}
+	{"ip_addr", "FIP_ADDR", ""},
+	{"version", "FVERSION", ""},
+	{"join time", "FJOIN_TIME", ""},
+	{"up time", "FUP_TIME", ""},
+	{"total storage", "FTOTAL_STORAGE", ""},
+	{"free storage", "FFREE_STORAGE", ""},
+	{"upload priority", "FUPLOAD_PRIORITY", ""},
+	{"store_path_count", "FSTORE_PATH_COUNT ", ""},
+	{"storage_port", "FSTORAGE_PORT", ""},
+	{"connection.alloc_count", "FCONNECTION_ALLOC_COUNT", ""},
+	{"connection.current_count", "FCONNECTION_CURRENT_COUNT", ""},
+	{"connection.max_count", "FCONNECTION_MAX_COUNT", ""},
+	{"total_upload_count", "FTOTAL_UPLOAD_COUNT", ""},
+	{"success_upload_count", "FSUCCESS_UPLOAD_COUNT", ""},
+	{"total_append_count", "FTOTAL_APPEND_COUNT", ""},
+	{"success_append_count", "FSUCCESS_APPEND_COUNT", ""},
+	{"total_modify_count", "FTOTAL_MODIFY_COUNT", ""},
+	{"success_modify_count", "FSUCCESS_MODIFY_COUNT", ""},
+	{"total_truncate_count", "FTOTAL_TRUNCATE_COUNT", ""},
+	{"success_truncate_count", "FSUCCESS_TRUNCATE_COUNT", ""},
+	{"total_set_meta_count", "FTOTAL_SET_META_COUNT", ""},
+	{"success_set_meta_count", "FSUCCESS_SET_META_COUNT", ""},
+	{"total_delete_count", "FTOTAL_DELETE_COUNT", ""},
+	{"success_delete_count", "FSUCCESS_DELETE_COUNT", ""},
+	{"total_download_count", "FTOTAL_DOWNLOAD_COUNT", ""},
+	{"success_download_count", "FSUCCESS_DOWNLOAD_COUNT", ""},
+	{"total_get_meta_count", "FTOTAL_GET_META_COUNT", ""},
+	{"success_get_meta_count", "FSUCCESS_GET_META_COUNT", ""},
+	{"total_create_link_count", "FTOTAL_CREATE_LINK_COUNT", ""},
+	{"success_create_link_count", "FSUCCESS_CREATE_LINK_COUNT", ""},
+	{"total_delete_link_count", "FTOTAL_DELETE_LINK_COUNT", ""},
+	{"success_delete_link_count", "FSUCCESS_DELETE_LINK_COUNT", ""},
+	{"total_upload_bytes", "FTOTAL_UPLOAD_BYTES", ""},
+	{"success_upload_bytes", "FSUCCESS_UPLOAD_BYTES", ""},
+	{"total_append_bytes", "FTOTAL_APPEND_BYTES", ""},
+	{"success_append_bytes", "FSUCCESS_APPEND_BYTES", ""},
+	{"total_modify_bytes", "FTOTAL_MODIFY_BYTES", ""},
+	{"success_modify_bytes", "FSUCCESS_MODIFY_BYTES", ""},
+	{"total_download_bytes", "FTOTAL_DOWNLOAD_BYTES", ""},
+	{"success_download_bytes", "FSUCCESS_DOWNLOAD_BYTES", ""},
+	{"total_sync_in_bytes", "FTOTAL_SYNC_IN_BYTES", ""},
+	{"success_sync_in_bytes", "FSUCCESS_SYNC_IN_BYTES",  ""},
+	{"total_sync_out_bytes", "FTOTAL_SYNC_OUT_BYTES", ""},
+	{"success_sync_out_bytes", "FSUCCESS_SYNC_OUT_BYTES", ""},
+	{"last_heart_beat_time", "FLAST_HEART_BEAT_TIME", ""},
+	{"last_synced_timestamp", "FLAST_SYNCED_TIMESTAMP", ""}
 };
 
 #define SQL_BUF_LEN 4096*100
@@ -719,9 +721,9 @@ static int save_db(char* key,char* value)
 	memset(query_string, 0, SQL_BUF_LEN);
 	snprintf(query_string, SQL_BUF_LEN, "INSERT INTO raw_data(datatime,value)VALUES('%s','%s')" ,key ,value);
 	logDebug("%s",query_string);
-	if(save_mysql(db,query_string) != 0){
+	/*if(save_mysql(db,query_string) != 0){
 		goto ERROR;
-	}
+	}*/
 	
 	char *line_start = value;
 	char *line_end = NULL;
@@ -757,13 +759,13 @@ static int save_db(char* key,char* value)
 					prev_group = group_id;
 					prev_storage = storage_id - 1;
 				}
-				snprintf(query_string, SQL_BUF_LEN, "insert into storage(time,groupid,serverid,");
+				snprintf(query_string, SQL_BUF_LEN, "insert into T_FDFSWEB_STORAGE(FTIME,FGROUPID,FSERVERID,");
 				for(index = 0;index != 45;++index){
 					strcpy(temp_str,query_string);
 					snprintf(query_string,SQL_BUF_LEN,"%s%s,",temp_str,g_fdfs_table[index].insert_key);
 				}
 				strcpy(temp_str,query_string);
-				snprintf(query_string,SQL_BUF_LEN,"%s%s)values('%s',%d,%d," ,temp_str,g_fdfs_table[index].insert_key,key,prev_group,prev_storage);
+				snprintf(query_string,SQL_BUF_LEN,"%s%s)values('%s',%d,%d," ,temp_str,g_fdfs_table[index].insert_key,key,prev_group+FDFS_TAG,prev_storage);
 				for(index = 0;index != 45;++index){
 					strcpy(temp_str,query_string);
 					if(index != 0 && index != 1 && index != 2 && index != 3 && index != 8 && index != 44){
@@ -798,13 +800,13 @@ static int save_db(char* key,char* value)
 	}
 	if(no_group == 0)
 	{
-		snprintf(query_string, SQL_BUF_LEN, "insert into storage(time,groupid,serverid,");
+		snprintf(query_string, SQL_BUF_LEN, "insert into T_FDFSWEB_STORAGE(FTIME,FGROUPID,FSERVERID,");
 		for(index = 0;index != 45;++index){
 			strcpy(temp_str,query_string);
 			snprintf(query_string,SQL_BUF_LEN,"%s%s,",temp_str,g_fdfs_table[index].insert_key);
 		}
 		strcpy(temp_str,query_string);
-		snprintf(query_string,SQL_BUF_LEN,"%s%s)values('%s',%d,%d," ,temp_str,g_fdfs_table[index].insert_key,key,group_id,storage_id);
+		snprintf(query_string,SQL_BUF_LEN,"%s%s)values('%s',%d,%d," ,temp_str,g_fdfs_table[index].insert_key,key,group_id+FDFS_TAG,storage_id);
 		for(index = 0;index != 45;++index){
 			strcpy(temp_str,query_string);
 			if(index != 0 && index != 1 && index != 2 && index != 3 && index != 8 && index != 44){
@@ -854,7 +856,7 @@ static void ping_tracker(TrackerServerGroup *pTrackerGroup)
 		if ((conn=tracker_connect_server(pServer, &result)) != NULL)
 		{    
 			memset(query_string, 0, SQL_BUF_LEN);
-			snprintf(query_string, SQL_BUF_LEN, "update tracker set trackerState='ACTIVE',trackerIp='%s' where trackerId=%d;" ,pServer->ip_addr,(int)(pEnd - pServer));
+			snprintf(query_string, SQL_BUF_LEN, "update T_FDFSWEB_TRACKER set FTRACKER_STATE='ACTIVE',FTRACKER_IP='%s' where FTRACKERID=%d;" ,pServer->ip_addr,(int)(pEnd - pServer)+FDFS_TAG);
 			logInfo("%s\n",query_string);
 			if(save_mysql(db,query_string) != 0){
 				goto ERROR;
@@ -862,7 +864,7 @@ static void ping_tracker(TrackerServerGroup *pTrackerGroup)
 			continue ;
 		}    
 		memset(query_string, 0, SQL_BUF_LEN);
-		snprintf(query_string, SQL_BUF_LEN, "update tracker set trackerState='OFFLINE',trackerIp='%s' where trackerId=%d;" ,pServer->ip_addr,(int)(pEnd - pServer));
+		snprintf(query_string, SQL_BUF_LEN, "update T_FDFSWEB_TRACKER set FTRACKER_STATE='OFFLINE',FTRACKER_IP='%s' where FTRACKERID=%d;" ,pServer->ip_addr,(int)(pEnd - pServer)+FDFS_TAG);
 		logInfo("%s\n",query_string);
 		if(save_mysql(db,query_string) != 0){
 			goto ERROR;
