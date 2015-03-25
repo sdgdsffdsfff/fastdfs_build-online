@@ -39,7 +39,8 @@ struct configItem g_config_list[] = {
 	{"db_user", ""},
 	{"db_pwd", ""},
 	{"log_name", ""},
-	{"fdfs_tag", ""}
+	{"fdfs_tag", ""},
+	{"fdfs_conf", ""}
 };
 
 int g_log_fd;
@@ -50,6 +51,7 @@ int g_log_fd;
 #define DB_PWD			g_config_list[3].value
 #define LOG_NAME		g_config_list[4].value
 #define FDFS_TAG		atoi(g_config_list[5].value)
+#define FDFS_CONF		g_config_list[6].value
 
 static ConnectionInfo *pTrackerServer;
 
@@ -889,7 +891,7 @@ static void* save(time_t job_time,void *arg) {
 
 	timetostr(&job_time,key);
 	logInfo("%s\n",key);
-	if ((result=fdfs_client_init("/etc/fdfs/client.conf")) != 0)
+	if ((result=fdfs_client_init(FDFS_CONF)) != 0)
 	{
 		return NULL;
 	}
